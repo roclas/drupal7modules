@@ -1,0 +1,6 @@
+name = Contenttypepagination
+description = "Allows content type pagination."
+package = Pro Drupal Development
+core = 7.x
+files[] = contenttypepagination.module
+files[] = contenttypepagination.tpl.php
