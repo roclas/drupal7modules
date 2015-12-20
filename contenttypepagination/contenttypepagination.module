@@ -1,24 +1,15 @@
 <?php
 /**
-* @file
-* Lets users add private annotations to nodes.
-*
-* Adds a text field when a node is displayed
-* so that authenticated users may make notes.
-*/
-//
-/**
  * Implements hook_menu()
  * @return array
  */
 
 function contenttypepagination_menu() {
-  $aItems['contenttypepagination/%/%/%'] = array(
-        'title' => 'content type pagination t',
+  $aItems['contenttypepagination'] = array(
+        'title' => t('contenT type pagination'),
         'type' => MENU_LOCAL_TASK,
         'page callback' => '_page_contenttypepagination',
-        'access arguments' => array('job_post','start','limit'),
-        'page arguments' => array(2,3,4),
+        'access arguments' => array('content access'),
         'access callback' => TRUE,
   );
   return $aItems;
@@ -29,17 +20,20 @@ function contenttypepagination_menu() {
  *
  * @return array
  */
-function _page_contenttypepagination($contenttype="job_post",$start=0,$limit=2) {
-    //$result = db_select('node', 'n') ->fields('n') ->execute() ->fetchAssoc();
-    $result = db_get_nodes_by_contenttype($contenttype,$start,$limit);
+function _page_contenttypepagination($contenttype='page',$start=0,$limit=20) {
+    $r= db_get_nodes_by_contenttype($contenttype,$start,$limit);
+    $result=$r[0];
+    $count=$r[1];
     $page_array['contenttypepagination'] = array(
 	//'title' => t('All posts from the last week'),
       	'items' => $result,
-      	//Theme hook with suggestion.  
-      	'#theme' => 'contenttypepagination',
+        'count' => $count,
+        'start' => $start,
+        'limit' => $limit,
+        'type' => $contenttype,
     );
-    return theme('contenttypepagination',$page_array);
-    //return theme('pager', $page_array);
+    $tpl =  drupal_get_path('module', 'contenttypepagination')."/contenttypepagination.tpl.php";
+    return theme_render_template($tpl,$page_array);
 }
 
 function db_get_nodes_by_contenttype($contenttype,$start,$limit) {
@@ -51,7 +45,13 @@ function db_get_nodes_by_contenttype($contenttype,$start,$limit) {
     ->range($start,$limit)
     ->execute()
     ->fetchCol(); // returns an indexed array
+   $count= db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->fields('n', array('type'))
+    ->condition('n.type', $contenttype)
+    ->countQuery()->execute()->fetchField();
 
    // Now return the node objects.
-   return node_load_multiple($nids);
+   $result=node_load_multiple($nids);
+   return array($result,$count);
 }
