@@ -46,4 +46,3 @@ showing <?=count($r['items'])?> items from <?=$r['count']?><br/>
 </a>
 <?php }?>
 <?php }?>
-
